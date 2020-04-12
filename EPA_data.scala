@@ -1,7 +1,7 @@
 var alldf = spark.emptyDataFrame;
 for( a <- 1980 to 2019){
 	println( "Value of a: " + a );
-	var df = spark.read.format("csv").option("header", "true").load("./ozone/daily_44201_"+a+".csv");
+	var df = spark.read.format("csv").option("header", "true").load("./ozone/daily_TEMP_"+a+".csv");
 	df = df.withColumn("Date_Local", (col("Date Local").cast("timestamp")))
 	df = df.withColumn("Arithmetic_Mean", df("Arithmetic Mean").cast("float"));
 	df = df.withColumn("County_Name", (col("County Name").cast("string")))
@@ -95,7 +95,9 @@ var df = spark.read.format("csv").option("header", "true").load("CO_aggregation_
 df.createOrReplaceTempView("CO_aggregation");
 
 
-var comball = spark.sql("""SELECT no.County_Name,co.State_Name,co.year_month, NO, CO,so2, Ozone FROM NO_aggregation no join CO_aggregation co on (no.County_Name = co.County_Name and no.State_Name = co.State_Name and no.year_month=co.year_month) join so2_aggregation so on (no.County_Name = so.County_Name and no.State_Name = so.State_Name and no.year_month=so.year_month) join ozone_aggregation oz on (no.County_Name = oz.County_Name and no.State_Name = oz.State_Name and no.year_month=oz.year_month)""")
+var comball = spark.sql("""SELECT no.County_Name,no.State_Name,no.year_month, NO, CO,so2, Ozone FROM NO_aggregation no left outer join CO_aggregation co on (no.County_Name = co.County_Name and no.State_Name = co.State_Name and no.year_month=co.year_month) left outer join so2_aggregation so on (no.County_Name = so.County_Name and no.State_Name = so.State_Name and no.year_month=so.year_month) left outer join ozone_aggregation oz on (no.County_Name = oz.County_Name and no.State_Name = oz.State_Name and no.year_month=oz.year_month)""")
+
+var comball = spark.sql("""SELECT oz.County_Name,oz.State_Name,oz.year_month, NO, CO,so2, Ozone FROM ozone_aggregation oz left outer join CO_aggregation co on (oz.County_Name = co.County_Name and oz.State_Name = co.State_Name and oz.year_month=co.year_month) left outer join so2_aggregation so on (oz.County_Name = so.County_Name and oz.State_Name = so.State_Name and oz.year_month=so.year_month) left outer join NO_aggregation no on (no.County_Name = oz.County_Name and no.State_Name = oz.State_Name and no.year_month=oz.year_month)""")
 
 
 comball.coalesce(1).write.option("header", "true").csv("aggregated.csv")
