@@ -49,7 +49,7 @@ df_1 = spark.read.format("csv").option("header", "true").load("/FileStore/tables
 .select($"County_Name", $"State_Name", date_format($"year_month","yyyy") as "year_month" ,  $"NO".cast(DoubleType) as "NO", $"CO".cast(DoubleType) as "CO", $"so2".cast(DoubleType) as "so2", $"Ozone".cast(DoubleType) as "Ozone")
 .groupBy($"County_Name",$"State_Name",$"year_month").avg()
 
-var gases = df_1.select($"County_Name",$"State_Name",$"year_month", bround(df_1("avg(NO)"), 2) as "NO", bround(df_1("avg(CO)"), 2) as "CO" , bround(df_1("avg(CO)"), 2) as "so2", bround(df_1("avg(Ozone)"), 2) as "Ozone")
+var gases = df_1.select($"County_Name",$"State_Name",$"year_month", bround(df_1("avg(NO)"), 2) as "NO", bround(df_1("avg(CO)"), 2) as "CO" , bround(df_1("avg(so2)"), 2) as "so2", bround(df_1("avg(Ozone)"), 2) as "Ozone")
 gases.select(count("year_month")).show()
 //gases.show()
 
@@ -99,6 +99,17 @@ var wind = df_1.select($"County_Name",$"State_Name",$"year_month", bround(df_1("
 wind.select(count("year_month")).show()                                                                                                                               
 
 
+
+// COMMAND ----------
+
+var df_1 = spark.read.format("csv").option("header", "true").load("/FileStore/tables/forecasted_april11_x_values.csv")
+.select($"County_Name", $"State_Name", date_format($"year_month","yyyy") as "year_month" ,  $"AQI".cast(DoubleType) as "AQI" , $"PRESS".cast(DoubleType) as "PRESS", $"TEMP".cast(DoubleType) as "TEMP", $"RH_DP".cast(DoubleType) as "RH_DP", $"particulates_pm10_mass_avg".cast(DoubleType) as "PM10", $"WIND".cast(DoubleType) as "WIND", $"lead_avg".cast(DoubleType) as "LEAD", $"NO".cast(DoubleType) as "NO", $"CO".cast(DoubleType) as "CO", $"so2".cast(DoubleType) as "so2", $"Ozone".cast(DoubleType) as "Ozone")
+.groupBy($"County_Name",$"State_Name",$"year_month").avg()
+
+var simulated_X = df_1.select($"County_Name",$"State_Name",$"year_month" as "year", bround(df_1("avg(NO)"), 2) as "NO", bround(df_1("avg(CO)"), 2) as "CO" , bround(df_1("avg(so2)"), 2) as "so2", bround(df_1("avg(Ozone)"), 2) as "Ozone", bround(df_1("avg(RH_DP)"), 2) as "RH_DP",  bround(df_1("avg(PM10)"), 2) as "PM10", bround(df_1("avg(AQI)"), 2) as "AQI",  bround(df_1("avg(PRESS)"), 2) as "PRESS", bround(df_1("avg(TEMP)"), 2) as "TEMP" , bround(df_1("avg(WIND)"), 2) as "WIND", bround(df_1("avg(LEAD)"), 2) as "LEAD")
+var df = simulated_X.select($"County_Name",$"State_Name",$"year", $"AQI" , $"PRESS", $"TEMP", $"RH_DP", $"NO", $"CO", $"so2", $"Ozone", $"PM10", $"WIND", $"LEAD")
+display(df)
+//display(simulated_X.select(df_X("County_Name"),df_X("State_Name"),df_X("year"), $"AQI" , $"PRESS", $"TEMP", $"RH_DP", $"NO", $"CO", $"so2", $"Ozone", $"PM10", $"WIND", $"LEAD"))
 
 // COMMAND ----------
 
